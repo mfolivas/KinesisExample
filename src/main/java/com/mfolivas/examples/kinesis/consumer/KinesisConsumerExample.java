@@ -50,7 +50,8 @@ public class KinesisConsumerExample {
 
         String workerId = InetAddress.getLocalHost().getCanonicalHostName() + ":" + UUID.randomUUID();
 
-        KinesisClientLibConfiguration kinesisClientLibConfiguration = new KinesisClientLibConfiguration(SAMPLE_APPLICATION_NAME, SAMPLE_APPLICATION_STREAM_NAME, credentialsProvider, workerId);
+        KinesisClientLibConfiguration kinesisClientLibConfiguration =
+                new KinesisClientLibConfiguration(SAMPLE_APPLICATION_NAME, SAMPLE_APPLICATION_STREAM_NAME, credentialsProvider, workerId);
         kinesisClientLibConfiguration.withInitialPositionInStream(SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM);
         IRecordProcessorFactory recordProcessorFactory = new SampleRecordProcessorFactory();
         Worker worker = new Worker.Builder().recordProcessorFactory(recordProcessorFactory).config(kinesisClientLibConfiguration).build();
