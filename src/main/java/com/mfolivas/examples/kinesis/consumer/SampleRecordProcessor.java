@@ -1,5 +1,9 @@
 package com.mfolivas.examples.kinesis.consumer;
 
+import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
+import com.amazonaws.services.kinesis.clientlibrary.exceptions.KinesisClientLibDependencyException;
+import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
+import com.amazonaws.services.kinesis.clientlibrary.exceptions.ThrottlingException;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcessor;
 import com.amazonaws.services.kinesis.clientlibrary.types.InitializationInput;
 import com.amazonaws.services.kinesis.clientlibrary.types.ProcessRecordsInput;
@@ -24,14 +28,23 @@ public class SampleRecordProcessor implements IRecordProcessor {
     private InitializationInput initializationInput;
 
     public void initialize(InitializationInput initializationInput) {
-        System.out.println("initializationInput = [" + initializationInput + "]");
+        System.out.format("initializationInput  ShardId [%s], SequenceNumber: %s\n",initializationInput.getShardId(), initializationInput.getExtendedSequenceNumber());
         this.initializationInput = initializationInput;
     }
 
     public void processRecords(ProcessRecordsInput processRecordsInput) {
         System.out.println("processRecordsInput = [" + processRecordsInput + "]");
         List<Record> records = processRecordsInput.getRecords();
+       
         processRecordsWithRetries(records);
+        
+        try {
+            processRecordsInput.getCheckpointer().checkpoint();
+        } catch (KinesisClientLibDependencyException | InvalidStateException | ThrottlingException
+                | ShutdownException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace(System.out);
+        }
 
     }
 
@@ -53,11 +66,10 @@ public class SampleRecordProcessor implements IRecordProcessor {
             // For this app, we interpret the payload as UTF-8 chars.
             data = decoder.decode(record.getData()).toString();
             // Assume this record came from AmazonKinesisSample and log its age.
-            long recordCreateTime = new Long(data.substring("testData-".length()));
-            long ageOfRecordInMillis = System.currentTimeMillis() - recordCreateTime;
+//            long recordCreateTime = new Long(data.substring("testData-".length()));
+//            long ageOfRecordInMillis = System.currentTimeMillis() - recordCreateTime;
 
-            System.out.println(record.getSequenceNumber() + ", " + record.getPartitionKey() + ", " + data + ", Created "
-                    + ageOfRecordInMillis + " milliseconds ago.");
+            System.out.println(record.getSequenceNumber() + ", " + record.getPartitionKey() + ", " + data );
         } catch (NumberFormatException e) {
             System.out.println("Record does not match sample record format. Ignoring record with data; " + data);
         } catch (CharacterCodingException e) {

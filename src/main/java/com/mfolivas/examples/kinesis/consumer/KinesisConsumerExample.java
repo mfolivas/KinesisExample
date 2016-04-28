@@ -15,14 +15,14 @@ import java.util.UUID;
  * @author Marcelo Olivas
  */
 public class KinesisConsumerExample {
-    public static final String SAMPLE_APPLICATION_STREAM_NAME = "test-stream";
+    public static final String SAMPLE_APPLICATION_STREAM_NAME = "sfw-midas";
 
     private static final String SAMPLE_APPLICATION_NAME = "SampleKinesisApplication";
 
     // Initial position in the stream when the application starts up for the first time.
     // Position can be one of LATEST (most recent data) or TRIM_HORIZON (oldest available data)
     private static final InitialPositionInStream SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM =
-            InitialPositionInStream.LATEST;
+            InitialPositionInStream.TRIM_HORIZON;
 
     private static AWSCredentialsProvider credentialsProvider;
 
@@ -51,10 +51,13 @@ public class KinesisConsumerExample {
         String workerId = InetAddress.getLocalHost().getCanonicalHostName() + ":" + UUID.randomUUID();
 
         KinesisClientLibConfiguration kinesisClientLibConfiguration =
-                new KinesisClientLibConfiguration(SAMPLE_APPLICATION_NAME, SAMPLE_APPLICATION_STREAM_NAME, credentialsProvider, workerId);
-        kinesisClientLibConfiguration.withInitialPositionInStream(SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM);
+                new KinesisClientLibConfiguration(SAMPLE_APPLICATION_NAME, SAMPLE_APPLICATION_STREAM_NAME, credentialsProvider, workerId)
+                .withInitialPositionInStream(SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM);
         IRecordProcessorFactory recordProcessorFactory = new SampleRecordProcessorFactory();
-        Worker worker = new Worker.Builder().recordProcessorFactory(recordProcessorFactory).config(kinesisClientLibConfiguration).build();
+        Worker worker = new Worker.Builder()
+                .recordProcessorFactory(recordProcessorFactory)
+                .config(kinesisClientLibConfiguration)
+                .build();
         worker.run();
 
     }
